@@ -85,6 +85,7 @@ public class JarLauncher extends ExecutableArchiveLauncher {
 	}
 
 	public static void main(String[] args) throws Exception {
+		//springsboot jar启动的起点
 		new JarLauncher().launch(args);
 	}
 
