@@ -50,13 +50,16 @@ public abstract class Launcher {
 	 */
 	protected void launch(String[] args) throws Exception {
 		if (!isExploded()) {
-			//注册 URL 协议的处理器
+			//注册 URL 协议的处理器，这里只是追加了spring-boot自身url协议处理器所在包的路径
 			JarFile.registerUrlProtocolHandler();
 		}
 		//获取类加载器
 		ClassLoader classLoader = createClassLoader(getClassPathArchivesIterator());
+		//获取jarMode属性值
 		String jarMode = System.getProperty("jarmode");
+		//获取Start-Class即spring-boot中启动类
 		String launchClass = (jarMode != null && !jarMode.isEmpty()) ? JAR_MODE_LAUNCHER : getMainClass();
+		//执行springApplication的main方法
 		launch(args, launchClass, classLoader);
 	}
 
@@ -82,9 +85,11 @@ public abstract class Launcher {
 	 */
 	protected ClassLoader createClassLoader(Iterator<Archive> archives) throws Exception {
 		List<URL> urls = new ArrayList<>(50);
+		//遍历取出文档下所有的url
 		while (archives.hasNext()) {
 			urls.add(archives.next().getUrl());
 		}
+		//创建classLoader
 		return createClassLoader(urls.toArray(new URL[0]));
 	}
 
@@ -95,6 +100,7 @@ public abstract class Launcher {
 	 * @throws Exception if the classloader cannot be created
 	 */
 	protected ClassLoader createClassLoader(URL[] urls) throws Exception {
+		//创建自定以ClassLoader用以加载BOOT-INF下的classes和lib下的jar包
 		return new LaunchedURLClassLoader(isExploded(), getArchive(), urls, getClass().getClassLoader());
 	}
 
@@ -151,8 +157,10 @@ public abstract class Launcher {
 	}
 
 	protected final Archive createArchive() throws Exception {
+		//获取项目的绝对根路径
 		ProtectionDomain protectionDomain = getClass().getProtectionDomain();
 		CodeSource codeSource = protectionDomain.getCodeSource();
+		//根路径
 		URI location = (codeSource != null) ? codeSource.getLocation().toURI() : null;
 		String path = (location != null) ? location.getSchemeSpecificPart() : null;
 		if (path == null) {
@@ -162,6 +170,7 @@ public abstract class Launcher {
 		if (!root.exists()) {
 			throw new IllegalStateException("Unable to determine code source archive from " + root);
 		}
+		//如果路径是文件目录则创建ExplodedArchive，否则创建JarFileArchive
 		return (root.isDirectory() ? new ExplodedArchive(root) : new JarFileArchive(root));
 	}
 

@@ -120,6 +120,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 
 	@Override
 	protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		//如果name以org.springframework.boot.loader.jarmode.开始
 		if (name.startsWith("org.springframework.boot.loader.jarmode.")) {
 			try {
 				Class<?> result = loadClassInLaunchedClassLoader(name);
@@ -137,6 +138,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 		Handler.setUseFastConnectionExceptions(true);
 		try {
 			try {
+				//定义包所在路径
 				definePackageIfNecessary(name);
 			}
 			catch (IllegalArgumentException ex) {
@@ -148,6 +150,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 					throw new AssertionError("Package " + name + " has already been defined but it could not be found");
 				}
 			}
+			//加载类
 			return super.loadClass(name, resolve);
 		}
 		finally {
@@ -193,6 +196,7 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 	private void definePackageIfNecessary(String className) {
 		int lastDot = className.lastIndexOf('.');
 		if (lastDot >= 0) {
+			//包名
 			String packageName = className.substring(0, lastDot);
 			if (getPackage(packageName) == null) {
 				try {
@@ -215,10 +219,14 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 	private void definePackage(String className, String packageName) {
 		try {
 			AccessController.doPrivileged((PrivilegedExceptionAction<Object>) () -> {
+				//包名
 				String packageEntryName = packageName.replace('.', '/') + "/";
+				//类名
 				String classEntryName = className.replace('.', '/') + ".class";
 				for (URL url : getURLs()) {
 					try {
+						//url只是一个代理，内部使用自定义的URLStreamHandler进行处理
+						//new 一个url的时候会从system中获取key=java.protocol.handler.pkgs获取自定义url协议处理器所在的包的路径
 						URLConnection connection = url.openConnection();
 						if (connection instanceof JarURLConnection) {
 							JarFile jarFile = ((JarURLConnection) connection).getJarFile();

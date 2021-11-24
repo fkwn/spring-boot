@@ -407,17 +407,23 @@ public class Handler extends URLStreamHandler {
 	}
 
 	/**
+	 * 捕获由原是jar处理器设置的url值，以便于我们能够将之作为一个回退的上下文
 	 * If possible, capture a URL that is configured with the original jar handler so that
 	 * we can use it as a fallback context later. We can only do this if we know that we
 	 * can reset the handlers after.
 	 */
 	static void captureJarContextUrl() {
+		//canResetCachedUrlHandlers 重置协议处理器
 		if (canResetCachedUrlHandlers()) {
+			//先取出java.protocol.handler.pkgs环境变量的值，以备发生异常的时候恢复
 			String handlers = System.getProperty(PROTOCOL_HANDLER, "");
 			try {
+				//清空java.protocol.handler.pkgs属性值
 				System.clearProperty(PROTOCOL_HANDLER);
 				try {
+					//清空URL中url协议解析器集合和协议解析器工厂
 					resetCachedUrlHandlers();
+					//将jar的上下文url设置为原始jar默认的url
 					jarContextUrl = new URL("jar:file:context.jar!/");
 					URLConnection connection = jarContextUrl.openConnection();
 					if (connection instanceof JarURLConnection) {
@@ -435,6 +441,7 @@ public class Handler extends URLStreamHandler {
 					System.setProperty(PROTOCOL_HANDLER, handlers);
 				}
 			}
+			//再次清空URL中url协议解析器集合和协议解析器工厂。因为在上面过程中可能url协议处理器被重新赋值
 			resetCachedUrlHandlers();
 		}
 	}
@@ -450,6 +457,8 @@ public class Handler extends URLStreamHandler {
 	}
 
 	private static void resetCachedUrlHandlers() {
+		//清空URLStreamHandlerFactory
+		//清空Hashtable<String,URLStreamHandler> handlers
 		URL.setURLStreamHandlerFactory(null);
 	}
 

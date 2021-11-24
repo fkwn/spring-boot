@@ -64,6 +64,7 @@ public interface Archive extends Iterable<Archive.Entry>, AutoCloseable {
 	 */
 	default Iterator<Archive> getNestedArchives(EntryFilter searchFilter, EntryFilter includeFilter)
 			throws IOException {
+		//组成一个新的entry过滤器
 		EntryFilter combinedFilter = (entry) -> (searchFilter == null || searchFilter.matches(entry))
 				&& (includeFilter == null || includeFilter.matches(entry));
 		List<Archive> nestedArchives = getNestedArchives(combinedFilter);

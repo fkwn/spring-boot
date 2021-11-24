@@ -55,6 +55,7 @@ public class JarLauncher extends ExecutableArchiveLauncher {
 	@Override
 	protected ClassPathIndexFile getClassPathIndex(Archive archive) throws IOException {
 		// Only needed for exploded archives, regular ones already have a defined order
+		//如果为ExplodedArchive，ExplodedArchive用于处理文档类型的文档
 		if (archive instanceof ExplodedArchive) {
 			String location = getClassPathIndexFileLocation(archive);
 			return ClassPathIndexFile.loadIfPossible(archive.getUrl(), location);
@@ -65,7 +66,9 @@ public class JarLauncher extends ExecutableArchiveLauncher {
 	private String getClassPathIndexFileLocation(Archive archive) throws IOException {
 		Manifest manifest = archive.getManifest();
 		Attributes attributes = (manifest != null) ? manifest.getMainAttributes() : null;
+		//从元数据配置文件中读取属性值为Spring-Boot-Classpath-Index的值
 		String location = (attributes != null) ? attributes.getValue(BOOT_CLASSPATH_INDEX_ATTRIBUTE) : null;
+		//默认返回BOOT-INF/classpath.idx
 		return (location != null) ? location : DEFAULT_CLASSPATH_INDEX_LOCATION;
 	}
 
@@ -76,16 +79,21 @@ public class JarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected boolean isSearchCandidate(Archive.Entry entry) {
+		//只处理BOOT-INF文件下的class和jar
 		return entry.getName().startsWith("BOOT-INF/");
 	}
 
 	@Override
 	protected boolean isNestedArchive(Archive.Entry entry) {
+		//entry.name=BOOT-INF/classes/ 或 以BOOT-INF/lib/开头
 		return NESTED_ARCHIVE_ENTRY_FILTER.matches(entry);
 	}
 
 	public static void main(String[] args) throws Exception {
 		//springsboot jar启动的起点
+		//需要解决两个问题：
+		//1.如何加载BOOT-INF下的class和jar
+		//2.如何通过SprintApplication启动程序
 		new JarLauncher().launch(args);
 	}
 

@@ -45,6 +45,7 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 
 	public ExecutableArchiveLauncher() {
 		try {
+			//创建一个根文档
 			this.archive = createArchive();
 			this.classPathIndex = getClassPathIndex(this.archive);
 		}
@@ -101,7 +102,12 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 
 	@Override
 	protected Iterator<Archive> getClassPathArchivesIterator() throws Exception {
+		//archive初始化的时候被创建
+		//只处理BOOT-INF文件下的class和jar
 		Archive.EntryFilter searchFilter = this::isSearchCandidate;
+
+		//构造了一个迭代器 this.jarFile.iterator()
+		//以BOOT-INFO开头，并且entry.name=BOOT-INF/classes/ 或 以BOOT-INF/lib/开头
 		Iterator<Archive> archives = this.archive.getNestedArchives(searchFilter,
 				(entry) -> isNestedArchive(entry) && !isEntryIndexed(entry));
 		if (isPostProcessingClassPathArchives()) {
