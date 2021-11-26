@@ -28,6 +28,7 @@ import org.springframework.util.ClassUtils;
 public enum WebApplicationType {
 
 	/**
+	 * 非内嵌的 Web 应用
 	 * The application should not run as a web application and should not start an
 	 * embedded web server.
 	 */
@@ -36,12 +37,14 @@ public enum WebApplicationType {
 	/**
 	 * The application should run as a servlet-based web application and should start an
 	 * embedded servlet web server.
+	 * 内嵌的 Servlet Web 应用。例如说，Spring MVC 。
 	 */
 	SERVLET,
 
 	/**
 	 * The application should run as a reactive web application and should start an
 	 * embedded reactive web server.
+	 * 内嵌的 Reactive Web 应用。例如说，Spring Webflux 。
 	 */
 	REACTIVE;
 
@@ -59,15 +62,18 @@ public enum WebApplicationType {
 	private static final String REACTIVE_APPLICATION_CONTEXT_CLASS = "org.springframework.boot.web.reactive.context.ReactiveWebApplicationContext";
 
 	static WebApplicationType deduceFromClasspath() {
+		//如果存在DispatcherHandler 但是不存在DispatcherServlet 则表示为Spring Webflux
 		if (ClassUtils.isPresent(WEBFLUX_INDICATOR_CLASS, null) && !ClassUtils.isPresent(WEBMVC_INDICATOR_CLASS, null)
 				&& !ClassUtils.isPresent(JERSEY_INDICATOR_CLASS, null)) {
 			return WebApplicationType.REACTIVE;
 		}
+		//如果不存在Servlet，ConfigurableWebApplicationContext则为非内嵌web应用
 		for (String className : SERVLET_INDICATOR_CLASSES) {
 			if (!ClassUtils.isPresent(className, null)) {
 				return WebApplicationType.NONE;
 			}
 		}
+		//默认为sprign-mvc
 		return WebApplicationType.SERVLET;
 	}
 

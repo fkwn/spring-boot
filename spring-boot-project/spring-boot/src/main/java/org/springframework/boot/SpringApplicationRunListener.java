@@ -39,6 +39,7 @@ import org.springframework.core.io.support.SpringFactoriesLoader;
 public interface SpringApplicationRunListener {
 
 	/**
+	 * 启动
 	 * Called immediately when the run method has first started. Can be used for very
 	 * early initialization.
 	 * @param bootstrapContext the bootstrap context
@@ -47,6 +48,7 @@ public interface SpringApplicationRunListener {
 	}
 
 	/**
+	 * 环境准备完成
 	 * Called once the environment has been prepared, but before the
 	 * {@link ApplicationContext} has been created.
 	 * @param bootstrapContext the bootstrap context
@@ -57,6 +59,7 @@ public interface SpringApplicationRunListener {
 	}
 
 	/**
+	 * 容器准备完成
 	 * Called once the {@link ApplicationContext} has been created and prepared, but
 	 * before sources have been loaded.
 	 * @param context the application context
@@ -65,6 +68,7 @@ public interface SpringApplicationRunListener {
 	}
 
 	/**
+	 * 容器加载完成
 	 * Called once the application context has been loaded but before it has been
 	 * refreshed.
 	 * @param context the application context
