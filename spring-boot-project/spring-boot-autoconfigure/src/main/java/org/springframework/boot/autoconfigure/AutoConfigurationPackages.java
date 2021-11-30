@@ -105,9 +105,14 @@ public abstract class AutoConfigurationPackages {
 	 * configuration.
 	 */
 	static class Registrar implements ImportBeanDefinitionRegistrar, DeterminableImports {
-
+		/**
+		 *
+		 * @param metadata @SpringBootApplication元数据
+		 * @param registry sprisng容器
+		 */
 		@Override
 		public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+			//注册到容器中
 			register(registry, new PackageImports(metadata).getPackageNames().toArray(new String[0]));
 		}
 
@@ -126,13 +131,17 @@ public abstract class AutoConfigurationPackages {
 		private final List<String> packageNames;
 
 		PackageImports(AnnotationMetadata metadata) {
+			//获取到@AutoConfigurationPackage注解的属性
 			AnnotationAttributes attributes = AnnotationAttributes
 					.fromMap(metadata.getAnnotationAttributes(AutoConfigurationPackage.class.getName(), false));
+			//获取basePackages值
 			List<String> packageNames = new ArrayList<>(Arrays.asList(attributes.getStringArray("basePackages")));
+			//将basePackageClasses所设置的class[]的
 			for (Class<?> basePackageClass : attributes.getClassArray("basePackageClasses")) {
 				packageNames.add(basePackageClass.getPackage().getName());
 			}
 			if (packageNames.isEmpty()) {
+				//将@SpringBootApplication类所在的包加入到列表中
 				packageNames.add(ClassUtils.getPackageName(metadata.getClassName()));
 			}
 			this.packageNames = Collections.unmodifiableList(packageNames);
