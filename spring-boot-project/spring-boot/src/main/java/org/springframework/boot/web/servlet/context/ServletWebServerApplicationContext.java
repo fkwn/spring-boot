@@ -106,11 +106,19 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 * {@link ServletRegistrationBean} or a different bean name.
 	 */
 	public static final String DISPATCHER_SERVLET_NAME = "dispatcherServlet";
-
+	/**
+	 * Spring  WebServer 对象
+	 */
 	private volatile WebServer webServer;
-
+	/**
+	 * Servlet ServletConfig 对象
+	 */
 	private ServletConfig servletConfig;
-
+	/**
+	 * 通过 {@link #setServerNamespace(String)} 注入。
+	 *
+	 * 不过貌似，一直没被注入过，可以暂时先无视
+	 */
 	private String serverNamespace;
 
 	/**
@@ -134,8 +142,11 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 */
 	@Override
 	protected void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+		// <1.1> 注册 WebApplicationContextServletContextAwareProcessor
 		beanFactory.addBeanPostProcessor(new WebApplicationContextServletContextAwareProcessor(this));
+		// <1.2> 忽略 ServletContextAware 接口。
 		beanFactory.ignoreDependencyInterface(ServletContextAware.class);
+		// <2> 注册 ExistingWebApplicationScopes
 		registerWebApplicationScopes();
 	}
 
@@ -147,6 +158,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		catch (RuntimeException ex) {
 			WebServer webServer = this.webServer;
 			if (webServer != null) {
+				//如果发生异常，停止 WebServer
 				webServer.stop();
 			}
 			throw ex;

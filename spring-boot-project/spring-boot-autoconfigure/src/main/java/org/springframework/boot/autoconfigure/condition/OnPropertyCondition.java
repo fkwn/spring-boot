@@ -47,17 +47,24 @@ class OnPropertyCondition extends SpringBootCondition {
 
 	@Override
 	public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
+		//取出@ConditionalOnProperty的属性值并将值封装成AnnotationAttributes
 		List<AnnotationAttributes> allAnnotationAttributes = annotationAttributesFromMultiValueMap(
 				metadata.getAllAnnotationAttributes(ConditionalOnProperty.class.getName()));
+		//不匹配信息
 		List<ConditionMessage> noMatch = new ArrayList<>();
+		//匹配信息
 		List<ConditionMessage> match = new ArrayList<>();
+		//遍历属性进行匹配
 		for (AnnotationAttributes annotationAttributes : allAnnotationAttributes) {
+			//验证
 			ConditionOutcome outcome = determineOutcome(annotationAttributes, context.getEnvironment());
 			(outcome.isMatch() ? match : noMatch).add(outcome.getConditionMessage());
 		}
+		//不匹配
 		if (!noMatch.isEmpty()) {
 			return ConditionOutcome.noMatch(ConditionMessage.of(noMatch));
 		}
+		//匹配
 		return ConditionOutcome.match(ConditionMessage.of(match));
 	}
 
@@ -85,6 +92,7 @@ class OnPropertyCondition extends SpringBootCondition {
 	}
 
 	private ConditionOutcome determineOutcome(AnnotationAttributes annotationAttributes, PropertyResolver resolver) {
+		//解析属性值
 		Spec spec = new Spec(annotationAttributes);
 		List<String> missingProperties = new ArrayList<>();
 		List<String> nonMatchingProperties = new ArrayList<>();
@@ -113,11 +121,13 @@ class OnPropertyCondition extends SpringBootCondition {
 		private final boolean matchIfMissing;
 
 		Spec(AnnotationAttributes annotationAttributes) {
+			//prefix属性
 			String prefix = annotationAttributes.getString("prefix").trim();
 			if (StringUtils.hasText(prefix) && !prefix.endsWith(".")) {
 				prefix = prefix + ".";
 			}
 			this.prefix = prefix;
+			//havingValue属性
 			this.havingValue = annotationAttributes.getString("havingValue");
 			this.names = getNames(annotationAttributes);
 			this.matchIfMissing = annotationAttributes.getBoolean("matchIfMissing");

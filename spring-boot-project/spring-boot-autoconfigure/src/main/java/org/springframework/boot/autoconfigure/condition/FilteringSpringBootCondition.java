@@ -45,13 +45,17 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 
 	@Override
 	public boolean[] match(String[] autoConfigurationClasses, AutoConfigurationMetadata autoConfigurationMetadata) {
+		//从beanFactory中获取autoConfigurationReport，如果beanFactory中不存在会创建一个，并将之注册到容器中
 		ConditionEvaluationReport report = ConditionEvaluationReport.find(this.beanFactory);
+		//调用子类的实现，校验条件是否满足
 		ConditionOutcome[] outcomes = getOutcomes(autoConfigurationClasses, autoConfigurationMetadata);
 		boolean[] match = new boolean[outcomes.length];
 		for (int i = 0; i < outcomes.length; i++) {
 			match[i] = (outcomes[i] == null || outcomes[i].isMatch());
 			if (!match[i] && outcomes[i] != null) {
+				//打印日志
 				logOutcome(autoConfigurationClasses[i], outcomes[i]);
+				//记录
 				if (report != null) {
 					report.recordConditionEvaluation(autoConfigurationClasses[i], this, outcomes[i]);
 				}
@@ -81,6 +85,13 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 		this.beanClassLoader = classLoader;
 	}
 
+	/**
+	 * 该方法，提供给子类使用。
+	 * @param classNames
+	 * @param classNameFilter
+	 * @param classLoader
+	 * @return
+	 */
 	protected final List<String> filter(Collection<String> classNames, ClassNameFilter classNameFilter,
 			ClassLoader classLoader) {
 		if (CollectionUtils.isEmpty(classNames)) {
@@ -88,6 +99,7 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 		}
 		List<String> matches = new ArrayList<>(classNames.size());
 		for (String candidate : classNames) {
+			//判断class是否存在
 			if (classNameFilter.matches(candidate, classLoader)) {
 				matches.add(candidate);
 			}
@@ -110,8 +122,13 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 		return Class.forName(className);
 	}
 
+	/**
+	 * 用于判断类是否存在的功能
+	 */
 	protected enum ClassNameFilter {
-
+		/**
+		 * 指定类存在
+		 */
 		PRESENT {
 
 			@Override
@@ -120,7 +137,9 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 			}
 
 		},
-
+		/**
+		 * 指定类不存在
+		 */
 		MISSING {
 
 			@Override
@@ -137,6 +156,7 @@ abstract class FilteringSpringBootCondition extends SpringBootCondition
 				classLoader = ClassUtils.getDefaultClassLoader();
 			}
 			try {
+				//如果能够将calss载入到jvm则返回true，否则则返回false
 				resolve(className, classLoader);
 				return true;
 			}

@@ -132,7 +132,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		checkExcludedClasses(configurations, exclusions);
 		// <4.2> 从 configurations 中，移除需要排除的配置类
 		configurations.removeAll(exclusions);
-		// <5> 根据条件（Condition），过滤掉不符合条件的配置类
+		// <5> 根据条件（Condition），过滤掉不符合条件的配置类，返回匹配的Configuration
 		configurations = getConfigurationClassFilter().filter(configurations);
 		// <6> 触发自动配置类引入完成的事件
 		fireAutoConfigurationImportEvents(configurations, exclusions);
@@ -279,8 +279,14 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		return SpringFactoriesLoader.loadFactories(AutoConfigurationImportFilter.class, this.beanClassLoader);
 	}
 
+	/**
+	 * 返回ConfigurationClassFilter，其作用为筛选满足条件的ConfigurationClass
+	 * @return
+	 */
 	private ConfigurationClassFilter getConfigurationClassFilter() {
 		if (this.configurationClassFilter == null) {
+			//从容器中获取AutoConfigurationImportFilter.class的类
+			//其中FilteringSpringBootCondition继承了AutoConfigurationImportFilter
 			List<AutoConfigurationImportFilter> filters = getAutoConfigurationImportFilters();
 			for (AutoConfigurationImportFilter filter : filters) {
 				invokeAwareMethods(filter);
@@ -373,6 +379,9 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		return Ordered.LOWEST_PRECEDENCE - 1;
 	}
 
+	/**
+	 * 对自动配置进行条件筛选（即condition条件的判断）
+	 */
 	private static class ConfigurationClassFilter {
 
 		private final AutoConfigurationMetadata autoConfigurationMetadata;
@@ -388,7 +397,9 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 			long startTime = System.nanoTime();
 			String[] candidates = StringUtils.toStringArray(configurations);
 			boolean skipped = false;
+			//遍历filter
 			for (AutoConfigurationImportFilter filter : this.filters) {
+				//调用match方法
 				boolean[] match = filter.match(candidates, this.autoConfigurationMetadata);
 				for (int i = 0; i < match.length; i++) {
 					if (!match[i]) {
@@ -397,9 +408,11 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 					}
 				}
 			}
+			//如果candidates没有为null，则不需要进行后面的筛选操作所以直接跳过
 			if (!skipped) {
 				return configurations;
 			}
+			//剔除掉candidates中为null的项
 			List<String> result = new ArrayList<>(candidates.length);
 			for (String candidate : candidates) {
 				if (candidate != null) {

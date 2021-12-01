@@ -86,11 +86,15 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 			AutoConfigurationMetadata autoConfigurationMetadata) {
 		ConditionOutcome[] outcomes = new ConditionOutcome[autoConfigurationClasses.length];
 		for (int i = 0; i < outcomes.length; i++) {
+			//自动配置configurationClass
 			String autoConfigurationClass = autoConfigurationClasses[i];
 			if (autoConfigurationClass != null) {
+				//获取被@ConditionalOnBean注释的beanType
 				Set<String> onBeanTypes = autoConfigurationMetadata.getSet(autoConfigurationClass, "ConditionalOnBean");
 				outcomes[i] = getOutcome(onBeanTypes, ConditionalOnBean.class);
+				//如果验证成功
 				if (outcomes[i] == null) {
+					//获取被@ConditionalOnSingleCandidate注释的beanType
 					Set<String> onSingleCandidateTypes = autoConfigurationMetadata.getSet(autoConfigurationClass,
 							"ConditionalOnSingleCandidate");
 					outcomes[i] = getOutcome(onSingleCandidateTypes, ConditionalOnSingleCandidate.class);
@@ -101,7 +105,9 @@ class OnBeanCondition extends FilteringSpringBootCondition implements Configurat
 	}
 
 	private ConditionOutcome getOutcome(Set<String> requiredBeanTypes, Class<? extends Annotation> annotation) {
+		//判断类是否存在
 		List<String> missing = filter(requiredBeanTypes, ClassNameFilter.MISSING, getBeanClassLoader());
+		//为空，则返回不匹配
 		if (!missing.isEmpty()) {
 			ConditionMessage message = ConditionMessage.forCondition(annotation)
 					.didNotFind("required type", "required types").items(Style.QUOTE, missing);
