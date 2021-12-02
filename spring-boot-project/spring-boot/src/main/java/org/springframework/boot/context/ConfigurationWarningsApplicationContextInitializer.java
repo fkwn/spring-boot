@@ -56,6 +56,7 @@ public class ConfigurationWarningsApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext context) {
+		//将ConfigurationWarningsPostProcessor注册到容器中
 		context.addBeanFactoryPostProcessor(new ConfigurationWarningsPostProcessor(getChecks()));
 	}
 
@@ -90,8 +91,10 @@ public class ConfigurationWarningsApplicationContextInitializer
 
 		@Override
 		public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+			//遍历check数组
 			for (Check check : this.checks) {
 				String message = check.getWarning(registry);
+				//如果有信息则打印日志
 				if (StringUtils.hasLength(message)) {
 					warn(message);
 				}
@@ -130,6 +133,7 @@ public class ConfigurationWarningsApplicationContextInitializer
 		private static final Set<String> PROBLEM_PACKAGES;
 
 		static {
+			//包的路径，默认扫描下面两个包下面的bean
 			Set<String> packages = new HashSet<>();
 			packages.add("org.springframework");
 			packages.add("org");
@@ -138,11 +142,15 @@ public class ConfigurationWarningsApplicationContextInitializer
 
 		@Override
 		public String getWarning(BeanDefinitionRegistry registry) {
+			//获取所有扫描包路径
 			Set<String> scannedPackages = getComponentScanningPackages(registry);
+			//判断包是否有问题
 			List<String> problematicPackages = getProblematicPackages(scannedPackages);
+			//有问题的包为空，则直接返回
 			if (problematicPackages.isEmpty()) {
 				return null;
 			}
+			//否则返回warning日志
 			return "Your ApplicationContext is unlikely to start due to a @ComponentScan of "
 					+ StringUtils.collectionToDelimitedString(problematicPackages, ", ") + ".";
 		}
@@ -150,8 +158,10 @@ public class ConfigurationWarningsApplicationContextInitializer
 		protected Set<String> getComponentScanningPackages(BeanDefinitionRegistry registry) {
 			Set<String> packages = new LinkedHashSet<>();
 			String[] names = registry.getBeanDefinitionNames();
+			//所有beanName
 			for (String name : names) {
 				BeanDefinition definition = registry.getBeanDefinition(name);
+				//获取每个bean中注解相关信息
 				if (definition instanceof AnnotatedBeanDefinition) {
 					AnnotatedBeanDefinition annotatedDefinition = (AnnotatedBeanDefinition) definition;
 					addComponentScanningPackages(packages, annotatedDefinition.getMetadata());
@@ -161,6 +171,7 @@ public class ConfigurationWarningsApplicationContextInitializer
 		}
 
 		private void addComponentScanningPackages(Set<String> packages, AnnotationMetadata metadata) {
+			//获取注解@ComponentScan的属性值
 			AnnotationAttributes attributes = AnnotationAttributes
 					.fromMap(metadata.getAnnotationAttributes(ComponentScan.class.getName(), true));
 			if (attributes != null) {
@@ -190,6 +201,7 @@ public class ConfigurationWarningsApplicationContextInitializer
 		private List<String> getProblematicPackages(Set<String> scannedPackages) {
 			List<String> problematicPackages = new ArrayList<>();
 			for (String scannedPackage : scannedPackages) {
+				//包路径为null或“”,以及为PROBLEM_PACKAGES中的包，则被判定为有问题的包
 				if (isProblematicPackage(scannedPackage)) {
 					problematicPackages.add(getDisplayName(scannedPackage));
 				}

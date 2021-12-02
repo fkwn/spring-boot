@@ -274,7 +274,7 @@ public class SpringApplication {
 		this.bootstrapRegistryInitializers = new ArrayList<>(
 				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
 		// 获得 ApplicationContextInitializer 类型的对象数组。其中包含一些初始化方法，用于设置applicationContext
-		//getSpringFactoriesInstances方法是通过扫描sprign.factores文件获取提前配置后的对应class的实现类
+		//getSpringFactoriesInstances方法是通过扫描sprign.factores文件获取提前配置后的对应class的实现类,并实例化
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
 		// 初始化 listeners 属性，用于处理时间监听
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));

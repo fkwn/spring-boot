@@ -51,20 +51,26 @@ public class ContextIdApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+		//获取或创建contextId
 		ContextId contextId = getContextId(applicationContext);
+		//设置
 		applicationContext.setId(contextId.getId());
+		//注册到容器中
 		applicationContext.getBeanFactory().registerSingleton(ContextId.class.getName(), contextId);
 	}
 
 	private ContextId getContextId(ConfigurableApplicationContext applicationContext) {
 		ApplicationContext parent = applicationContext.getParent();
+		//如果父容器有则从父容器中返回
 		if (parent != null && parent.containsBean(ContextId.class.getName())) {
 			return parent.getBean(ContextId.class).createChildId();
 		}
+		//否则通过环境变量创建
 		return new ContextId(getApplicationId(applicationContext.getEnvironment()));
 	}
 
 	private String getApplicationId(ConfigurableEnvironment environment) {
+		//从环境变量spring.application.name中获取contextId
 		String name = environment.getProperty("spring.application.name");
 		return StringUtils.hasText(name) ? name : "application";
 	}
