@@ -384,9 +384,9 @@ public class SpringApplication {
 		// Create and configure the environment
 		// 创建 spring boot 运行环境 对象，并进行配置
 		// 根据webApplicationType创建
-		// 这里会将system中的环境参数全数装载到内存中
+		// 这里会加载system中的env和properties
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
-		// 处理命令行参数（主要时合并）
+		// 处理默认参数和命令行参数（合并或新增）
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
 		ConfigurationPropertySources.attach(environment);
 		// 通知 SpringApplicationRunListener 的数组，环境变量已经准备完成。
@@ -523,8 +523,9 @@ public class SpringApplication {
 		switch (this.webApplicationType) {
 		case SERVLET:
 			//springmvc
-			//创建的时候会将system中的相关环境变量都加载到其中
 			//这一步是在其父类上执行的
+			// systemProperties加载system的环境变量参数properties
+			// systemEnvironment加载system的环境参数
 			return new ApplicationServletEnvironment();
 		case REACTIVE:
 			//spring-webflux
@@ -551,7 +552,7 @@ public class SpringApplication {
 			environment.setConversionService(new ApplicationConversionService());
 		}
 		// 增加 environment 的 PropertySource 属性源
-		//可以根据配置的 defaultProperties、或者 JVM 启动参数，作为附加的 PropertySource 属性源
+		// 加载defaultProperties和命令行参数
 		configurePropertySources(environment, args);
 		// 配置 environment 的 activeProfiles 属性
 		configureProfiles(environment, args);
@@ -570,21 +571,25 @@ public class SpringApplication {
 		MutablePropertySources sources = environment.getPropertySources();
 		//默认参数不为空，则合并
 		if (!CollectionUtils.isEmpty(this.defaultProperties)) {
-			//合并默认参数
+			//新增或合并
 			DefaultPropertiesPropertySource.addOrMerge(this.defaultProperties, sources);
 		}
-		// 来自启动参数的
+		// 来自启动参数，并参数不为空
 		if (this.addCommandLineProperties && args.length > 0) {
-			//获取命令行参数
+			//commandLineArgs
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
 			//如果包含commandLineArgs，则合并
 			//如果commandLineArgs已经存在则重新创建命令行source并合并
 			if (sources.contains(name)) {
 				PropertySource<?> source = sources.get(name);
+				//创建一个name=commandLineArgs的CompositePropertySource
 				CompositePropertySource composite = new CompositePropertySource(name);
+				//新增一个name=springApplicationCommandLineArgs的source
 				composite.addPropertySource(
 						new SimpleCommandLinePropertySource("springApplicationCommandLineArgs", args));
+				//将原来name=commandLineArgs的source放入
 				composite.addPropertySource(source);
+				//替换原来name=commandLineArgs的值
 				sources.replace(name, composite);
 			}
 			else {

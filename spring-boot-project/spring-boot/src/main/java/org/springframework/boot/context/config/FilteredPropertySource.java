@@ -46,19 +46,31 @@ class FilteredPropertySource extends PropertySource<PropertySource<?>> {
 		return getSource().getProperty(name);
 	}
 
+	/**
+	 *
+	 * @param environment 环境上下文
+	 * @param propertySourceName  defaultProperties
+	 * @param filteredProperties filteredProperties.add("spring.profiles.active"); filteredProperties.add("spring.profiles.include");
+	 * @param operation loadWithFilteredProperties
+	 */
 	static void apply(ConfigurableEnvironment environment, String propertySourceName, Set<String> filteredProperties,
 			Consumer<PropertySource<?>> operation) {
 		MutablePropertySources propertySources = environment.getPropertySources();
+		//获取name=defaultProperties的source
 		PropertySource<?> original = propertySources.get(propertySourceName);
+		//为空则loadWithFilteredProperties传入null
 		if (original == null) {
 			operation.accept(null);
 			return;
 		}
+		//不为空，创建一个FilteredPropertySource替换调name=defaultProperties中的值
 		propertySources.replace(propertySourceName, new FilteredPropertySource(original, filteredProperties));
 		try {
+			//传入original
 			operation.accept(original);
 		}
 		finally {
+			//还原name=defaultProperties中的值
 			propertySources.replace(propertySourceName, original);
 		}
 	}

@@ -142,6 +142,7 @@ public class RandomValuePropertySource extends PropertySource<Random> {
 	}
 
 	public static void addToEnvironment(ConfigurableEnvironment environment) {
+		//创建name=random的randomsource用以处理random.开头的变量
 		addToEnvironment(environment, logger);
 	}
 
@@ -152,11 +153,14 @@ public class RandomValuePropertySource extends PropertySource<Random> {
 			logger.trace("RandomValuePropertySource already present");
 			return;
 		}
+		//创建name=random的randomsource用以处理random.开头的变量
 		RandomValuePropertySource randomSource = new RandomValuePropertySource(RANDOM_PROPERTY_SOURCE_NAME);
 		if (sources.get(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME) != null) {
+			//追加到systemEnvironment后面
 			sources.addAfter(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, randomSource);
 		}
 		else {
+			//追加到sources后面
 			sources.addLast(randomSource);
 		}
 		logger.trace("RandomValuePropertySource add to Environment");

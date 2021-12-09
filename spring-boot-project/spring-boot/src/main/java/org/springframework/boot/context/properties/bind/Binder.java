@@ -321,6 +321,15 @@ public class Binder {
 		return bind(name, target, handler, true);
 	}
 
+	/**
+	 *
+	 * @param name
+	 * @param target Bindable.of(String[].class)
+	 * @param handler
+	 * @param create
+	 * @param <T>
+	 * @return
+	 */
 	private <T> T bind(ConfigurationPropertyName name, Bindable<T> target, BindHandler handler, boolean create) {
 		Assert.notNull(name, "Name must not be null");
 		Assert.notNull(target, "Target must not be null");
@@ -523,8 +532,11 @@ public class Binder {
 	 * @since 2.2.0
 	 */
 	public static Binder get(Environment environment, BindHandler defaultBindHandler) {
+		//获取name=configurationProperties的source
 		Iterable<ConfigurationPropertySource> sources = ConfigurationPropertySources.get(environment);
+		//占位处理
 		PropertySourcesPlaceholdersResolver placeholdersResolver = new PropertySourcesPlaceholdersResolver(environment);
+		//defaultBindHandler=null
 		return new Binder(sources, placeholdersResolver, null, null, defaultBindHandler);
 	}
 

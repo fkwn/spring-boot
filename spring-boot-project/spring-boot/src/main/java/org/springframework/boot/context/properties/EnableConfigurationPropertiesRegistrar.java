@@ -43,9 +43,13 @@ class EnableConfigurationPropertiesRegistrar implements ImportBeanDefinitionRegi
 
 	@Override
 	public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+		//注册ConfigurationPropertiesBindingPostProcessor和ConfigurationPropertiesBinder
 		registerInfrastructureBeans(registry);
+		//注册methodValidationExcludeFilter
 		registerMethodValidationExcludeFilter(registry);
 		ConfigurationPropertiesBeanRegistrar beanRegistrar = new ConfigurationPropertiesBeanRegistrar(registry);
+		//getTypes(metadata)获取注解所配置的class数组
+		//遍历class数组
 		getTypes(metadata).forEach(beanRegistrar::register);
 	}
 
@@ -56,12 +60,16 @@ class EnableConfigurationPropertiesRegistrar implements ImportBeanDefinitionRegi
 	}
 
 	static void registerInfrastructureBeans(BeanDefinitionRegistry registry) {
+		//注册ConfigurationPropertiesBindingPostProcessor和ConfigurationPropertiesBinder
 		ConfigurationPropertiesBindingPostProcessor.register(registry);
+		//注册BoundConfigurationProperties
 		BoundConfigurationProperties.register(registry);
 	}
 
 	static void registerMethodValidationExcludeFilter(BeanDefinitionRegistry registry) {
+		//如果不包含METHOD_VALIDATION_EXCLUDE_FILTER_BEAN_NAME
 		if (!registry.containsBeanDefinition(METHOD_VALIDATION_EXCLUDE_FILTER_BEAN_NAME)) {
+			//筛选除@ConfigurationProperties
 			BeanDefinition definition = BeanDefinitionBuilder
 					.genericBeanDefinition(MethodValidationExcludeFilter.class,
 							() -> MethodValidationExcludeFilter.byAnnotation(ConfigurationProperties.class))

@@ -60,9 +60,13 @@ public class BackgroundPreinitializer implements ApplicationListener<SpringAppli
 	 * @since 2.1.0
 	 */
 	public static final String IGNORE_BACKGROUNDPREINITIALIZER_PROPERTY_NAME = "spring.backgroundpreinitializer.ignore";
-
+	/**
+	 * 预初始化任务是否已启动
+	 */
 	private static final AtomicBoolean preinitializationStarted = new AtomicBoolean();
-
+	/**
+	 * 预初始化任务的 CountDownLatch 对象，用于实现等待预初始化任务是否完成
+	 */
 	private static final CountDownLatch preinitializationComplete = new CountDownLatch(1);
 
 	private static final boolean ENABLED;

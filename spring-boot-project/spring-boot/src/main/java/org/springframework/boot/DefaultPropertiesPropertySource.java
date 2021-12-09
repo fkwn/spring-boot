@@ -75,20 +75,25 @@ public class DefaultPropertiesPropertySource extends MapPropertySource {
 
 	/**
 	 * Add a new {@link DefaultPropertiesPropertySource} or merge with an existing one.
-	 * @param source the {@code Map} source
-	 * @param sources the existing sources
+	 * @param source the {@code Map} source 默认参数集合
+	 * @param sources the existing sources system环境和运行环境参数
 	 * @since 2.4.4
 	 */
 	public static void addOrMerge(Map<String, Object> source, MutablePropertySources sources) {
 		if (!CollectionUtils.isEmpty(source)) {
 			Map<String, Object> resultingSource = new HashMap<>();
 			DefaultPropertiesPropertySource propertySource = new DefaultPropertiesPropertySource(resultingSource);
+			//如果包含defaultProperties
 			if (sources.contains(NAME)) {
+				//将source和sources中key=defaultProperties的值合并到resultingSource中
 				mergeIfPossible(source, sources, resultingSource);
+				//替换原来key=defaultProperties的值
 				sources.replace(NAME, propertySource);
 			}
 			else {
+				//将source装入propertySource中
 				resultingSource.putAll(source);
+				//将值追加到sources的后面
 				sources.addLast(propertySource);
 			}
 		}
@@ -98,6 +103,7 @@ public class DefaultPropertiesPropertySource extends MapPropertySource {
 	private static void mergeIfPossible(Map<String, Object> source, MutablePropertySources sources,
 			Map<String, Object> resultingSource) {
 		PropertySource<?> existingSource = sources.get(NAME);
+		//存在
 		if (existingSource != null) {
 			Object underlyingSource = existingSource.getSource();
 			if (underlyingSource instanceof Map) {

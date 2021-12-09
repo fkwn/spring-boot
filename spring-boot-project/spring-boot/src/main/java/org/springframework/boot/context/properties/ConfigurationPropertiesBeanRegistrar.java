@@ -49,19 +49,23 @@ final class ConfigurationPropertiesBeanRegistrar {
 	}
 
 	void register(Class<?> type) {
+		//获取type中的@ConfigurationProperties
 		MergedAnnotation<ConfigurationProperties> annotation = MergedAnnotations
 				.from(type, SearchStrategy.TYPE_HIERARCHY).get(ConfigurationProperties.class);
 		register(type, annotation);
 	}
 
 	void register(Class<?> type, MergedAnnotation<ConfigurationProperties> annotation) {
+		//获取名称，名称格式为prefix + "-" + type.getName()
 		String name = getName(type, annotation);
+		//不包含该类则注册
 		if (!containsBeanDefinition(name)) {
 			registerBeanDefinition(name, type, annotation);
 		}
 	}
 
 	private String getName(Class<?> type, MergedAnnotation<ConfigurationProperties> annotation) {
+		//获取到@ConfigurationProperties的前缀
 		String prefix = annotation.isPresent() ? annotation.getString("prefix") : "";
 		return (StringUtils.hasText(prefix) ? prefix + "-" + type.getName() : type.getName());
 	}

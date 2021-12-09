@@ -161,6 +161,7 @@ public final class ConfigDataLocation implements OriginProvider {
 	 * provided
 	 */
 	public static ConfigDataLocation of(String location) {
+		//是否以optional:开头
 		boolean optional = location != null && location.startsWith(OPTIONAL_PREFIX);
 		String value = (!optional) ? location : location.substring(OPTIONAL_PREFIX.length());
 		if (!StringUtils.hasText(value)) {

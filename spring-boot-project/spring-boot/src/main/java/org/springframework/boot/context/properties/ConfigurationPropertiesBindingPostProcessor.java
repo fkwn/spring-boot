@@ -65,6 +65,8 @@ public class ConfigurationPropertiesBindingPostProcessor
 		// We can't use constructor injection of the application context because
 		// it causes eager factory bean initialization
 		this.registry = (BeanDefinitionRegistry) this.applicationContext.getAutowireCapableBeanFactory();
+		//获取org.springframework.boot.context.internalConfigurationPropertiesBinder
+		//该对象时在EnableConfigurationPropertiesRegistrar中被注册
 		this.binder = ConfigurationPropertiesBinder.get(this.applicationContext);
 	}
 
@@ -75,6 +77,7 @@ public class ConfigurationPropertiesBindingPostProcessor
 
 	@Override
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+		//ConfigurationPropertiesBean.get(),获取bean所对应的@ConfigurationProperties注解并创建一个ConfigurationPropertiesBean返回
 		bind(ConfigurationPropertiesBean.get(this.applicationContext, bean, beanName));
 		return bean;
 	}
@@ -106,10 +109,13 @@ public class ConfigurationPropertiesBindingPostProcessor
 	 */
 	public static void register(BeanDefinitionRegistry registry) {
 		Assert.notNull(registry, "Registry must not be null");
+		// 如果不包含ConfigurationPropertiesBindingPostProcessor
 		if (!registry.containsBeanDefinition(BEAN_NAME)) {
+			//创建一个ConfigurationPropertiesBindingPostProcessor的BeanDefinition
 			BeanDefinition definition = BeanDefinitionBuilder
 					.rootBeanDefinition(ConfigurationPropertiesBindingPostProcessor.class).getBeanDefinition();
 			definition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+			//注册
 			registry.registerBeanDefinition(BEAN_NAME, definition);
 		}
 		ConfigurationPropertiesBinder.register(registry);
